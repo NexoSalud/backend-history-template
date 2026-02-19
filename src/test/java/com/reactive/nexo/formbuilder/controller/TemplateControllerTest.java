@@ -1,0 +1,56 @@
+package com.reactive.nexo.formbuilder.controller;
+
+import com.reactive.nexo.formbuilder.dto.TemplateDTO;
+import com.reactive.nexo.formbuilder.service.TemplateService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+@WebFluxTest(TemplateController.class)
+class TemplateControllerTest {
+
+    @Autowired
+    private WebTestClient webTestClient;
+
+    @MockBean
+    private TemplateService templateService;
+
+    @Test
+    void getAllTemplates() {
+        TemplateDTO dto = TemplateDTO.builder().id(1L).name("test").build();
+        when(templateService.getAllTemplates()).thenReturn(Flux.just(dto));
+
+        webTestClient.get().uri("/api/v1/form-builder/templates")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TemplateDTO.class)
+                .hasSize(1);
+    }
+
+    @Test
+    void createTemplate() {
+        TemplateDTO dto = TemplateDTO.builder().name("test").build();
+        TemplateDTO createdDto = TemplateDTO.builder().id(1L).name("test").build();
+        when(templateService.createTemplate(any(TemplateDTO.class))).thenReturn(Mono.just(createdDto));
+
+        webTestClient.post().uri("/api/v1/form-builder/templates")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(dto)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(TemplateDTO.class)
+                .consumeWith(response -> {
+                    TemplateDTO responseBody = response.getResponseBody();
+                    assert responseBody != null;
+                    assert responseBody.getId().equals(1L);
+                });
+    }
+}

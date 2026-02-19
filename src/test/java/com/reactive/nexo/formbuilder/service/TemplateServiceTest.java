@@ -1,0 +1,84 @@
+package com.reactive.nexo.formbuilder.service;
+
+import com.reactive.nexo.formbuilder.dto.TemplateDTO;
+import com.reactive.nexo.formbuilder.dto.TemplateGroupDTO;
+import com.reactive.nexo.formbuilder.entity.Template;
+import com.reactive.nexo.formbuilder.repository.TemplateRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class TemplateServiceTest {
+
+    @Mock
+    private TemplateRepository templateRepository;
+
+    @Mock
+    private TemplateGroupService templateGroupService;
+
+    @Mock
+    private TemplateGroupAttrService templateGroupAttrService;
+
+    @InjectMocks
+    private TemplateService templateService;
+
+    private Template template;
+    private TemplateDTO templateDTO;
+
+    @BeforeEach
+    void setUp() {
+        template = Template.builder()
+                .id(1L)
+                .name("Test Template")
+                .description("Description")
+                .isActive(true)
+                .version(1)
+                .build();
+
+        templateDTO = TemplateDTO.builder()
+                .name("Test Template")
+                .description("Description")
+                .isActive(true)
+                .version(1)
+                .build();
+    }
+
+    @Test
+    void getAllTemplates() {
+        when(templateRepository.findAll()).thenReturn(Flux.just(template));
+        when(templateGroupService.getGroupsByTemplateId(1L)).thenReturn(Flux.empty());
+
+        StepVerifier.create(templateService.getAllTemplates())
+                .expectNextMatches(dto -> dto.getId().equals(1L) && dto.getName().equals("Test Template"))
+                .verifyComplete();
+    }
+
+    @Test
+    void getTemplateById() {
+        when(templateRepository.findById(1L)).thenReturn(Mono.just(template));
+        when(templateGroupService.getGroupsByTemplateId(1L)).thenReturn(Flux.empty());
+
+        StepVerifier.create(templateService.getTemplateById(1L))
+                .expectNextMatches(dto -> dto.getId().equals(1L))
+                .verifyComplete();
+    }
+
+    @Test
+    void createTemplate() {
+        when(templateRepository.save(any(Template.class))).thenReturn(Mono.just(template));
+
+        StepVerifier.create(templateService.createTemplate(templateDTO))
+                .expectNextMatches(dto -> dto.getId().equals(1L))
+                .verifyComplete();
+    }
+}

@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: History-template-service
+  r2dbc:
+    url: ${SPRING_R2DBC_URL:r2dbc:postgresql://localhost:5432/nexosalud}
+    username: ${SPRING_R2DBC_USERNAME:postgres}
+    password: ${SPRING_R2DBC_PASSWORD:postgres}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+server:
+  port: ${MODULE_PORT:8080}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
