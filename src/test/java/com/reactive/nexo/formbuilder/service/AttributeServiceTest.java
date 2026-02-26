@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reactive.nexo.formbuilder.dto.AttributeDTO;
 import com.reactive.nexo.formbuilder.entity.Attribute;
 import com.reactive.nexo.formbuilder.repository.AttributeRepository;
+import io.r2dbc.postgresql.codec.Json;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,11 +70,41 @@ class AttributeServiceTest {
     }
 
     @Test
-    void createAttribute() {
-        when(attributeRepository.save(any(Attribute.class))).thenReturn(Mono.just(attribute));
+    void createAttributeWithOptions() throws Exception {
+        // Use a real ObjectMapper for this test to verify JSON conversion
+        ObjectMapper realMapper = new ObjectMapper();
+        realMapper.findAndRegisterModules();
+        AttributeService serviceWithRealMapper = new AttributeService(attributeRepository, realMapper);
 
-        StepVerifier.create(attributeService.createAttribute(attributeDTO))
-                .expectNextMatches(dto -> dto.getId().equals(1L))
+        java.util.List<java.util.Map<String, Object>> options = java.util.List.of(
+                java.util.Map.of("value", "hombre", "label", "Hombre", "sort_order", 0),
+                java.util.Map.of("value", "mujer", "label", "Mujer", "sort_order", 1)
+        );
+
+        AttributeDTO dto = AttributeDTO.builder()
+                .code("genero")
+                .label("Genero")
+                .inputType("select")
+                .isRequired(true)
+                .options(options)
+                .build();
+
+        Attribute expectedEntity = Attribute.builder()
+                .code("genero")
+                .label("Genero")
+                .inputType("select")
+                .isRequired(true)
+                .options(Json.of(realMapper.writeValueAsString(options)))
+                .build();
+
+        when(attributeRepository.save(any(Attribute.class))).thenReturn(Mono.just(expectedEntity));
+
+        StepVerifier.create(serviceWithRealMapper.createAttribute(dto))
+                .expectNextMatches(savedDto -> {
+                    return savedDto.getCode().equals("genero") &&
+                            savedDto.getOptions() != null &&
+                            savedDto.getOptions().size() == 2;
+                })
                 .verifyComplete();
     }
 }

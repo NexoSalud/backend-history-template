@@ -1,5 +1,6 @@
 package com.reactive.nexo.formbuilder.entity;
 
+import io.r2dbc.postgresql.codec.Json;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,10 +45,10 @@ public class Attribute {
     private String tooltip;
 
     @Column("validation_rules")
-    private String validationRules; // Stored as JSON string directly for simplicity with R2DBC
+    private Json validationRules; // Changed from String to Json
 
     @Column("options")
-    private String options; // Stored as JSON string
+    private Json options; // Changed from String to Json
 
     @CreatedDate
     @Column("created_at")
