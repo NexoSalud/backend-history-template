@@ -44,14 +44,29 @@ public class AttributeService {
     }
 
     public Mono<AttributeDTO> updateAttribute(Long id, AttributeDTO dto) {
+        log.info("Updating attribute with ID: {}, DTO: {}", id, dto);
         return attributeRepository.findById(id)
                 .flatMap(existing -> {
-                    Attribute updated = toEntity(dto);
-                    updated.setId(existing.getId());
-                    updated.setCreatedAt(existing.getCreatedAt());
-                    return attributeRepository.save(updated);
+                    log.info("Found existing attribute: {}", existing);
+                    updateEntityFromDTO(existing, dto);
+                    return attributeRepository.save(existing)
+                            .doOnNext(saved -> log.info("Successfully saved attribute with ID: {}", saved.getId()))
+                            .doOnError(e -> log.error("Error saving attribute with ID: {}", id, e));
                 })
-                .map(this::toDTO);
+                .map(this::toDTO)
+                .doOnError(e -> log.error("Update operation failed for ID: {}", id, e));
+    }
+
+    private void updateEntityFromDTO(Attribute entity, AttributeDTO dto) {
+        entity.setCode(dto.getCode());
+        entity.setLabel(dto.getLabel());
+        entity.setInputType(dto.getInputType());
+        entity.setIsRequired(dto.getIsRequired() != null ? dto.getIsRequired() : false);
+        entity.setPlaceholder(dto.getPlaceholder());
+        entity.setDefaultValue(dto.getDefaultValue());
+        entity.setTooltip(dto.getTooltip());
+        entity.setValidationRules(toJson(dto.getValidationRules()));
+        entity.setOptions(toJson(dto.getOptions()));
     }
 
     public Mono<Void> deleteAttribute(Long id) {

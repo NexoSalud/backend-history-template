@@ -8,4 +8,5 @@ import reactor.core.publisher.Flux;
 @Repository
 public interface TemplateGroupAttrRepository extends R2dbcRepository<TemplateGroupAttr, Long> {
     Flux<TemplateGroupAttr> findAllByGroupIdOrderBySortOrderAsc(Long groupId);
+    Mono<Void> deleteByGroupIdAndAttributeId(Long groupId, Long attributeId);
 }

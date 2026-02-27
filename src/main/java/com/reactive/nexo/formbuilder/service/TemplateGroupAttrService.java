@@ -53,8 +53,8 @@ public class TemplateGroupAttrService {
                 .flatMap(this::populateAttribute);
     }
 
-    public Mono<Void> removeAttributeFromGroup(Long id) {
-        return templateGroupAttrRepository.deleteById(id);
+    public Mono<Void> removeAttributeFromGroup(Long groupId, Long attributeId) {
+        return templateGroupAttrRepository.deleteByGroupIdAndAttributeId(groupId, attributeId);
     }
 
     @Transactional
