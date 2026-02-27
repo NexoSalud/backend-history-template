@@ -49,9 +49,9 @@ public class AttributeController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete an attribute")
-    public Mono<Void> deleteAttribute(@PathVariable Long id) {
-        return attributeService.deleteAttribute(id);
+    public Mono<ResponseEntity<java.util.Map<String, Boolean>>> deleteAttribute(@PathVariable Long id) {
+        return attributeService.deleteAttribute(id)
+                .thenReturn(ResponseEntity.ok(java.util.Collections.singletonMap("success", true)));
     }
 }

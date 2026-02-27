@@ -49,9 +49,9 @@ public class TemplateController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete a template")
-    public Mono<Void> deleteTemplate(@PathVariable Long id) {
-        return templateService.deleteTemplate(id);
+    public Mono<ResponseEntity<java.util.Map<String, Boolean>>> deleteTemplate(@PathVariable Long id) {
+        return templateService.deleteTemplate(id)
+                .thenReturn(ResponseEntity.ok(java.util.Collections.singletonMap("success", true)));
     }
 }
