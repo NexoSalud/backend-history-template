@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @WebFluxTest(TemplateController.class)
@@ -52,5 +53,29 @@ class TemplateControllerTest {
                     assert responseBody != null;
                     assert responseBody.getId().equals(1L);
                 });
+    }
+
+    @Test
+    void updateTemplate() {
+        TemplateDTO dto = TemplateDTO.builder().name("updated").build();
+        when(templateService.updateTemplate(eq(1L), any(TemplateDTO.class))).thenReturn(Mono.just(dto));
+
+        webTestClient.put().uri("/api/v1/form-builder/templates/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(dto)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(TemplateDTO.class);
+    }
+
+    @Test
+    void deleteTemplate() {
+        when(templateService.deleteTemplate(1L)).thenReturn(Mono.empty());
+
+        webTestClient.delete().uri("/api/v1/form-builder/templates/1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.success").isEqualTo(true);
     }
 }
