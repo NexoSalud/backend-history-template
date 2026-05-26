@@ -54,7 +54,7 @@ public class TemplateGroupAttrService {
     }
 
     public Mono<Void> removeAttributeFromGroup(Long groupId, Long attributeId) {
-        return templateGroupAttrRepository.deleteByGroupIdAndAttributeId(groupId, attributeId);
+        return templateGroupAttrRepository.deleteById(attributeId);
     }
 
     @Transactional
@@ -81,6 +81,8 @@ public class TemplateGroupAttrService {
                 .isRequiredOverride(entity.getIsRequiredOverride())
                 .labelOverride(entity.getLabelOverride())
                 .width(entity.getWidth())
+                .dependsOnAttrId(entity.getDependsOnAttrId())
+                .dependsOnValue(entity.getDependsOnValue())
                 .build();
     }
 
@@ -92,6 +94,8 @@ public class TemplateGroupAttrService {
                 .isRequiredOverride(dto.getIsRequiredOverride())
                 .labelOverride(dto.getLabelOverride())
                 .width(dto.getWidth() != null ? dto.getWidth() : "full")
+                .dependsOnAttrId(dto.getDependsOnAttrId())
+                .dependsOnValue(dto.getDependsOnValue())
                 .build();
     }
 }

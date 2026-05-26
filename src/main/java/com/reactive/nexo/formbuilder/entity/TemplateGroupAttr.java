@@ -35,4 +35,10 @@ public class TemplateGroupAttr {
 
     @Column("width")
     private String width;
+
+    @Column("depends_on_attr_id")
+    private Long dependsOnAttrId;
+
+    @Column("depends_on_value")
+    private String dependsOnValue;
 }

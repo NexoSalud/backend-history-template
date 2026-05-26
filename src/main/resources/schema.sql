@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS fb_template_group_attr (
     is_required_override BOOLEAN,
     label_override       VARCHAR(255),
     width                VARCHAR(10) NOT NULL DEFAULT 'full',
+    depends_on_attr_id   BIGINT REFERENCES fb_attribute(id),
+    depends_on_value     VARCHAR(500),
 
     UNIQUE (group_id, attribute_id)
 );
