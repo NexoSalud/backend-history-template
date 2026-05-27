@@ -37,11 +37,11 @@ public class TemplateGroupAttrController {
     }
 
     @DeleteMapping("/{attrId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Remove an attribute from a group")
-    public Mono<Void> removeAttribute(@PathVariable Long templateId, @PathVariable Long groupId,
+    public Mono<ResponseEntity<java.util.Map<String, Boolean>>> removeAttribute(@PathVariable Long templateId, @PathVariable Long groupId,
             @PathVariable Long attrId) {
-        return templateGroupAttrService.removeAttributeFromGroup(attrId);
+        return templateGroupAttrService.removeAttributeFromGroup(groupId, attrId)
+                .thenReturn(ResponseEntity.ok(java.util.Collections.singletonMap("success", true)));
     }
 
     @PutMapping("/reorder")

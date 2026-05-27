@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS fb_attribute (
     placeholder     VARCHAR(255),
     default_value   VARCHAR(500),
     tooltip         VARCHAR(500),
-    validation_rules JSONB,
-    options         JSONB,
+    validation_rules JSON,
+    options         JSON,
     created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMP NOT NULL DEFAULT NOW()
 );

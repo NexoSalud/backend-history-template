@@ -4,8 +4,10 @@ import com.reactive.nexo.formbuilder.entity.TemplateGroupAttr;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Repository
 public interface TemplateGroupAttrRepository extends R2dbcRepository<TemplateGroupAttr, Long> {
     Flux<TemplateGroupAttr> findAllByGroupIdOrderBySortOrderAsc(Long groupId);
+    Mono<Void> deleteByGroupIdAndAttributeId(Long groupId, Long attributeId);
 }

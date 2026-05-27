@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reactive.nexo.formbuilder.dto.AttributeDTO;
 import com.reactive.nexo.formbuilder.entity.Attribute;
 import com.reactive.nexo.formbuilder.repository.AttributeRepository;
+import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,19 +35,38 @@ public class AttributeService {
     }
 
     public Mono<AttributeDTO> createAttribute(AttributeDTO dto) {
-        return attributeRepository.save(toEntity(dto))
+        log.info("Creating attribute from DTO: {}", dto);
+        Attribute entity = toEntity(dto);
+        log.info("Saving entity: {}", entity);
+        return attributeRepository.save(entity)
+                .doOnError(e -> log.error("Error saving attribute", e))
                 .map(this::toDTO);
     }
 
     public Mono<AttributeDTO> updateAttribute(Long id, AttributeDTO dto) {
+        log.info("Updating attribute with ID: {}, DTO: {}", id, dto);
         return attributeRepository.findById(id)
                 .flatMap(existing -> {
-                    Attribute updated = toEntity(dto);
-                    updated.setId(existing.getId());
-                    updated.setCreatedAt(existing.getCreatedAt());
-                    return attributeRepository.save(updated);
+                    log.info("Found existing attribute: {}", existing);
+                    updateEntityFromDTO(existing, dto);
+                    return attributeRepository.save(existing)
+                            .doOnNext(saved -> log.info("Successfully saved attribute with ID: {}", saved.getId()))
+                            .doOnError(e -> log.error("Error saving attribute with ID: {}", id, e));
                 })
-                .map(this::toDTO);
+                .map(this::toDTO)
+                .doOnError(e -> log.error("Update operation failed for ID: {}", id, e));
+    }
+
+    private void updateEntityFromDTO(Attribute entity, AttributeDTO dto) {
+        entity.setCode(dto.getCode());
+        entity.setLabel(dto.getLabel());
+        entity.setInputType(dto.getInputType());
+        entity.setIsRequired(dto.getIsRequired() != null ? dto.getIsRequired() : false);
+        entity.setPlaceholder(dto.getPlaceholder());
+        entity.setDefaultValue(dto.getDefaultValue());
+        entity.setTooltip(dto.getTooltip());
+        entity.setValidationRules(toJson(dto.getValidationRules()));
+        entity.setOptions(toJson(dto.getOptions()));
     }
 
     public Mono<Void> deleteAttribute(Long id) {
@@ -84,11 +104,11 @@ public class AttributeService {
                 .build();
     }
 
-    private Map<String, Object> parseJsonMap(String json) {
+    private Map<String, Object> parseJsonMap(Json json) {
         if (json == null)
             return null;
         try {
-            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {
+            return objectMapper.readValue(json.asString(), new TypeReference<Map<String, Object>>() {
             });
         } catch (JsonProcessingException e) {
             log.error("Error parsing JSON map", e);
@@ -96,11 +116,11 @@ public class AttributeService {
         }
     }
 
-    private List<Map<String, Object>> parseJsonList(String json) {
+    private List<Map<String, Object>> parseJsonList(Json json) {
         if (json == null)
             return null;
         try {
-            return objectMapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {
+            return objectMapper.readValue(json.asString(), new TypeReference<List<Map<String, Object>>>() {
             });
         } catch (JsonProcessingException e) {
             log.error("Error parsing JSON list", e);
@@ -108,11 +128,12 @@ public class AttributeService {
         }
     }
 
-    private String toJson(Object obj) {
+    private Json toJson(Object obj) {
         if (obj == null)
             return null;
         try {
-            return objectMapper.writeValueAsString(obj);
+            String jsonStr = objectMapper.writeValueAsString(obj);
+            return Json.of(jsonStr);
         } catch (JsonProcessingException e) {
             log.error("Error converting to JSON", e);
             return null;

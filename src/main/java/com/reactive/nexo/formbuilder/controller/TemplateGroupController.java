@@ -43,10 +43,10 @@ public class TemplateGroupController {
     }
 
     @DeleteMapping("/{groupId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete a group")
-    public Mono<Void> deleteGroup(@PathVariable Long templateId, @PathVariable Long groupId) {
-        return templateGroupService.deleteGroup(groupId);
+    public Mono<ResponseEntity<java.util.Map<String, Boolean>>> deleteGroup(@PathVariable Long templateId, @PathVariable Long groupId) {
+        return templateGroupService.deleteGroup(groupId)
+                .thenReturn(ResponseEntity.ok(java.util.Collections.singletonMap("success", true)));
     }
 
     @PutMapping("/reorder")
