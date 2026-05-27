@@ -1,12 +1,6 @@
-# Dockerfile for Spring Boot microservice
-FROM eclipse-temurin:17-jdk-jammy
-
+# Dockerfile for local testing (ARM Pi)
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-
-COPY pom.xml .
-COPY src ./src
-COPY target/*.jar target/
-
+COPY target/*.jar .
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "target/nexo-history-template-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "nexo-history-template-0.0.1-SNAPSHOT.jar"]
