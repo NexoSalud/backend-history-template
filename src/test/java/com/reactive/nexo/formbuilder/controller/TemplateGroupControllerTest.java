@@ -12,6 +12,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +38,17 @@ class TemplateGroupControllerTest {
                 .expectStatus().isOk()
                 .expectBodyList(TemplateGroupDTO.class)
                 .hasSize(1);
+    }
+
+    @Test
+    void getGroups_whenEmpty_returnsEmptyList() {
+        when(templateGroupService.getGroupsByTemplateId(999L)).thenReturn(Flux.empty());
+
+        webTestClient.get().uri("/api/v1/form-builder/templates/999/groups")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TemplateGroupDTO.class)
+                .hasSize(0);
     }
 
     @Test
@@ -78,6 +90,18 @@ class TemplateGroupControllerTest {
     }
 
     @Test
+    void updateGroup_notFound_returns404() {
+        TemplateGroupDTO dto = TemplateGroupDTO.builder().name("Updated Group").build();
+        when(templateGroupService.updateGroup(eq(999L), any(TemplateGroupDTO.class))).thenReturn(Mono.empty());
+
+        webTestClient.put().uri("/api/v1/form-builder/templates/1/groups/999")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(dto)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     void deleteGroup() {
         when(templateGroupService.deleteGroup(1L)).thenReturn(Mono.empty());
 
@@ -89,9 +113,33 @@ class TemplateGroupControllerTest {
     }
 
     @Test
+    void deleteGroup_nonExistent_stillReturnsSuccess() {
+        when(templateGroupService.deleteGroup(999L)).thenReturn(Mono.empty());
+
+        webTestClient.delete().uri("/api/v1/form-builder/templates/1/groups/999")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.success").isEqualTo(true);
+    }
+
+    @Test
     void reorderGroups() {
         ReorderRequest request = new ReorderRequest();
-        request.setOrderedIds(java.util.Arrays.asList(1L, 2L, 3L));
+        request.setOrderedIds(Arrays.asList(1L, 2L, 3L));
+        when(templateGroupService.reorderGroups(any(ReorderRequest.class))).thenReturn(Mono.empty());
+
+        webTestClient.put().uri("/api/v1/form-builder/templates/1/groups/reorder")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void reorderGroups_withEmptyList_stillSucceeds() {
+        ReorderRequest request = new ReorderRequest();
+        request.setOrderedIds(Collections.emptyList());
         when(templateGroupService.reorderGroups(any(ReorderRequest.class))).thenReturn(Mono.empty());
 
         webTestClient.put().uri("/api/v1/form-builder/templates/1/groups/reorder")

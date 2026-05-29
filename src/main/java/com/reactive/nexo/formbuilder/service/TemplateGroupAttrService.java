@@ -54,7 +54,7 @@ public class TemplateGroupAttrService {
     }
 
     public Mono<Void> removeAttributeFromGroup(Long groupId, Long attributeId) {
-        return templateGroupAttrRepository.deleteById(attributeId);
+        return templateGroupAttrRepository.deleteByGroupIdAndAttributeId(groupId, attributeId);
     }
 
     @Transactional
