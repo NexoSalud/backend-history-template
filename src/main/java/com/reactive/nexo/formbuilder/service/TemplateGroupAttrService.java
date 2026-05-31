@@ -81,6 +81,8 @@ public class TemplateGroupAttrService {
                 .isRequiredOverride(entity.getIsRequiredOverride())
                 .labelOverride(entity.getLabelOverride())
                 .width(entity.getWidth())
+                .dependsOnAttrId(entity.getDependsOnAttrId())
+                .dependsOnValue(entity.getDependsOnValue())
                 .build();
     }
 
@@ -92,6 +94,8 @@ public class TemplateGroupAttrService {
                 .isRequiredOverride(dto.getIsRequiredOverride())
                 .labelOverride(dto.getLabelOverride())
                 .width(dto.getWidth() != null ? dto.getWidth() : "full")
+                .dependsOnAttrId(dto.getDependsOnAttrId())
+                .dependsOnValue(dto.getDependsOnValue())
                 .build();
     }
 }

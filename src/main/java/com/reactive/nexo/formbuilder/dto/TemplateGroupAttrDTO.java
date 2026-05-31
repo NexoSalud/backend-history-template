@@ -23,5 +23,9 @@ public class TemplateGroupAttrDTO {
     @JsonProperty("label_override")
     private String labelOverride;
     private String width;
+    @JsonProperty("depends_on_attr_id")
+    private Long dependsOnAttrId;
+    @JsonProperty("depends_on_value")
+    private String dependsOnValue;
     private AttributeDTO attribute;
 }

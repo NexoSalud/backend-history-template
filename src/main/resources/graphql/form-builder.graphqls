@@ -1,0 +1,222 @@
+type Query {
+    """Obtener todos los templates"""
+    templates: [Template!]!
+
+    """Obtener un template por ID"""
+    template(id: ID!): Template
+
+    """Obtener grupos de un template"""
+    groups(templateId: ID!): [TemplateGroup!]!
+
+    """Obtener todos los atributos globales"""
+    attributes: [Attribute!]!
+
+    """Obtener un atributo por ID"""
+    attribute(id: ID!): Attribute
+
+    """Obtener atributos de un grupo"""
+    groupAttributes(groupId: ID!): [TemplateGroupAttribute!]!
+}
+
+type Mutation {
+    # === Templates ===
+    createTemplate(input: TemplateCreateInput!): Template!
+    updateTemplate(id: ID!, input: TemplateUpdateInput!): Template!
+    deleteTemplate(id: ID!): Boolean!
+
+    # === Groups ===
+    createGroup(templateId: ID!, input: GroupCreateInput!): TemplateGroup!
+    updateGroup(templateId: ID!, groupId: ID!, input: GroupUpdateInput!): TemplateGroup!
+    deleteGroup(templateId: ID!, groupId: ID!): Boolean!
+    reorderGroups(templateId: ID!, orderedIds: [ID!]!): Boolean!
+
+    # === Attributes (global) ===
+    createAttribute(input: AttributeCreateInput!): Attribute!
+    updateAttribute(id: ID!, input: AttributeUpdateInput!): Attribute!
+    deleteAttribute(id: ID!): Boolean!
+
+    # === Group Attributes (relations) ===
+    addAttributeToGroup(templateId: ID!, groupId: ID!, input: GroupAttributeInput!): TemplateGroupAttribute!
+    updateGroupAttribute(templateId: ID!, groupId: ID!, attrId: ID!, input: GroupAttributeUpdateInput!): TemplateGroupAttribute!
+    removeAttributeFromGroup(templateId: ID!, groupId: ID!, attrId: ID!): Boolean!
+    reorderGroupAttributes(templateId: ID!, groupId: ID!, orderedIds: [ID!]!): Boolean!
+}
+
+# ===== TYPES =====
+
+type Template {
+    id: ID!
+    name: String!
+    description: String
+    isActive: Boolean!
+    version: Int!
+    groups: [TemplateGroup!]!
+    createdAt: String
+    updatedAt: String
+}
+
+type TemplateGroup {
+    id: ID!
+    templateId: ID!
+    name: String!
+    description: String
+    sortOrder: Int!
+    icon: String
+    isCollapsible: Boolean!
+    attributes: [TemplateGroupAttribute!]!
+}
+
+type Attribute {
+    id: ID!
+    code: String!
+    label: String!
+    inputType: InputType!
+    isRequired: Boolean!
+    placeholder: String
+    defaultValue: String
+    tooltip: String
+    validationRules: ValidationRule
+    options: [AttributeOption!]
+    createdAt: String
+    updatedAt: String
+}
+
+type TemplateGroupAttribute {
+    id: ID!
+    groupId: ID!
+    attributeId: ID!
+    sortOrder: Int!
+    isRequiredOverride: Boolean
+    labelOverride: String
+    width: AttributeWidth!
+    dependsOnAttrId: ID
+    dependsOnValue: String
+    attribute: Attribute
+}
+
+type AttributeOption {
+    value: String!
+    label: String!
+    sortOrder: Int!
+}
+
+type ValidationRule {
+    minLength: Int
+    maxLength: Int
+    minValue: Float
+    maxValue: Float
+    pattern: String
+    customMessage: String
+}
+
+# ===== ENUMS =====
+
+enum InputType {
+    text
+    textarea
+    number
+    email
+    phone
+    date
+    datetime
+    select
+    multiselect
+    radio
+    checkbox
+    switch
+    file
+}
+
+enum AttributeWidth {
+    full
+    half
+    third
+}
+
+# ===== INPUTS =====
+
+input TemplateCreateInput {
+    name: String!
+    description: String
+    isActive: Boolean
+}
+
+input TemplateUpdateInput {
+    name: String
+    description: String
+    isActive: Boolean
+}
+
+input GroupCreateInput {
+    name: String!
+    description: String
+    sortOrder: Int!
+    icon: String
+    isCollapsible: Boolean
+}
+
+input GroupUpdateInput {
+    name: String
+    description: String
+    sortOrder: Int
+    icon: String
+    isCollapsible: Boolean
+}
+
+input AttributeOptionInput {
+    value: String!
+    label: String!
+    sortOrder: Int!
+}
+
+input ValidationRuleInput {
+    minLength: Int
+    maxLength: Int
+    minValue: Float
+    maxValue: Float
+    pattern: String
+    customMessage: String
+}
+
+input AttributeCreateInput {
+    code: String!
+    label: String!
+    inputType: InputType!
+    isRequired: Boolean
+    placeholder: String
+    defaultValue: String
+    tooltip: String
+    validationRules: ValidationRuleInput
+    options: [AttributeOptionInput!]
+}
+
+input AttributeUpdateInput {
+    code: String
+    label: String
+    inputType: InputType
+    isRequired: Boolean
+    placeholder: String
+    defaultValue: String
+    tooltip: String
+    validationRules: ValidationRuleInput
+    options: [AttributeOptionInput!]
+}
+
+input GroupAttributeInput {
+    attributeId: ID!
+    sortOrder: Int!
+    isRequiredOverride: Boolean
+    labelOverride: String
+    width: AttributeWidth
+    dependsOnAttrId: ID
+    dependsOnValue: String
+}
+
+input GroupAttributeUpdateInput {
+    sortOrder: Int
+    isRequiredOverride: Boolean
+    labelOverride: String
+    width: AttributeWidth
+    dependsOnAttrId: ID
+    dependsOnValue: String
+}

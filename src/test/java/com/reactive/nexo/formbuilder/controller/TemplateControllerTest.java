@@ -11,6 +11,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -34,6 +36,42 @@ class TemplateControllerTest {
                 .expectStatus().isOk()
                 .expectBodyList(TemplateDTO.class)
                 .hasSize(1);
+    }
+
+    @Test
+    void getAllTemplates_whenEmpty_returnsEmptyList() {
+        when(templateService.getAllTemplates()).thenReturn(Flux.empty());
+
+        webTestClient.get().uri("/api/v1/form-builder/templates")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(TemplateDTO.class)
+                .hasSize(0);
+    }
+
+    @Test
+    void getTemplateById_found() {
+        TemplateDTO dto = TemplateDTO.builder().id(1L).name("test").build();
+        when(templateService.getTemplateById(1L)).thenReturn(Mono.just(dto));
+
+        webTestClient.get().uri("/api/v1/form-builder/templates/1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(TemplateDTO.class)
+                .consumeWith(response -> {
+                    TemplateDTO body = response.getResponseBody();
+                    assert body != null;
+                    assert body.getId().equals(1L);
+                });
+    }
+
+    @Test
+    void getTemplateById_notFound_returns404() {
+        when(templateService.getTemplateById(999L)).thenReturn(Mono.empty());
+
+        webTestClient.get().uri("/api/v1/form-builder/templates/999")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     @Test
@@ -69,10 +107,34 @@ class TemplateControllerTest {
     }
 
     @Test
+    void updateTemplate_notFound_returns404() {
+        TemplateDTO dto = TemplateDTO.builder().name("updated").build();
+        when(templateService.updateTemplate(eq(999L), any(TemplateDTO.class))).thenReturn(Mono.empty());
+
+        webTestClient.put().uri("/api/v1/form-builder/templates/999")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(dto)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     void deleteTemplate() {
         when(templateService.deleteTemplate(1L)).thenReturn(Mono.empty());
 
         webTestClient.delete().uri("/api/v1/form-builder/templates/1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.success").isEqualTo(true);
+    }
+
+    @Test
+    void deleteTemplate_nonExistent_stillReturnsSuccess() {
+        // deleteById is fire-and-forget with R2DBC — no error for non-existent IDs
+        when(templateService.deleteTemplate(999L)).thenReturn(Mono.empty());
+
+        webTestClient.delete().uri("/api/v1/form-builder/templates/999")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()

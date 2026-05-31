@@ -9,6 +9,12 @@ spring:
     init:
       mode: always
       schema-locations: classpath:schema.sql
+  graphql:
+    graphiql:
+      enabled: true
+    schema:
+      printer:
+        enabled: true
 server:
   port: ${MODULE_PORT:8080}
 management:
