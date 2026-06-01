@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -53,6 +54,38 @@ public class FormBuilderGraphQLController {
     @QueryMapping
     public Flux<TemplateGroupAttrDTO> groupAttributes(@Argument Long groupId) {
         return templateGroupAttrService.getAttributesByGroupId(groupId);
+    }
+
+    // ========================
+    // FIELD RESOLVERS
+    // ========================
+
+    /**
+     * Resuelve lazy el campo groups en Template.
+     * Si ya está poblado (queries existentes vía populateTemplateDetails), lo retorna directo.
+     * Si es null (createTemplate/updateTemplate), lo carga desde la DB.
+     */
+    @SchemaMapping(typeName = "Template", field = "groups")
+    public Flux<TemplateGroupDTO> resolveGroups(TemplateDTO template) {
+        List<TemplateGroupDTO> existing = template.getGroups();
+        if (existing != null) {
+            return Flux.fromIterable(existing);
+        }
+        return templateGroupService.getGroupsByTemplateId(template.getId());
+    }
+
+    /**
+     * Resuelve lazy el campo attributes en TemplateGroup.
+     * Si ya está poblado (vía populateTemplateDetails), lo retorna directo.
+     * Si es null (createGroup/updateGroup), lo carga desde la DB.
+     */
+    @SchemaMapping(typeName = "TemplateGroup", field = "attributes")
+    public Flux<TemplateGroupAttrDTO> resolveAttributes(TemplateGroupDTO group) {
+        List<TemplateGroupAttrDTO> existing = group.getAttributes();
+        if (existing != null) {
+            return Flux.fromIterable(existing);
+        }
+        return templateGroupAttrService.getAttributesByGroupId(group.getId());
     }
 
     // ========================
