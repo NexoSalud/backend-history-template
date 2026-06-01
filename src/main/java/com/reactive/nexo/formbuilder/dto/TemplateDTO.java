@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,7 +21,7 @@ public class TemplateDTO {
     @JsonProperty("is_active")
     private Boolean isActive;
     private Integer version;
-    private List<TemplateGroupDTO> groups;
+    private List<TemplateGroupDTO> groups = new ArrayList<>();
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
     @JsonProperty("updated_at")

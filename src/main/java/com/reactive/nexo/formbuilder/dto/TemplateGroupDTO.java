@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -23,5 +24,5 @@ public class TemplateGroupDTO {
     private String icon;
     @JsonProperty("is_collapsible")
     private Boolean isCollapsible;
-    private List<TemplateGroupAttrDTO> attributes;
+    private List<TemplateGroupAttrDTO> attributes = new ArrayList<>();
 }
