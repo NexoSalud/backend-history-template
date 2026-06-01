@@ -15,6 +15,16 @@ spring:
     schema:
       printer:
         enabled: true
+
+  flyway:
+    enabled: true
+    url: ${SPRING_FLYWAY_URL:jdbc:postgresql://localhost:5432/nexosalud}
+    user: ${SPRING_R2DBC_USERNAME:postgres}
+    password: ${SPRING_R2DBC_PASSWORD:postgres}
+    baseline-on-migrate: true
+    baseline-version: 0
+    baseline-description: "Pre-Flyway state"
+    locations: classpath:db/migration
 server:
   port: ${MODULE_PORT:8080}
 management:
