@@ -46,6 +46,11 @@
             <artifactId>r2dbc-postgresql</artifactId>
             <version>1.0.4.RELEASE</version>
         </dependency>
+        <!-- Flyway para migrations -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-h2</artifactId>
