@@ -5,6 +5,8 @@ COPY pom.xml .
 RUN mvn dependency:go-offline -q
 
 ARG DEPLOY_VERSION=1
+RUN echo "Deploy version: $DEPLOY_VERSION"
+
 COPY src ./src
 RUN mvn clean package -DskipTests -q
 
