@@ -47,6 +47,13 @@ public class FormBuilderGraphQLController {
     }
 
     @QueryMapping
+    public Mono<AttributePageDTO> attributesPaginated(
+            @Argument int page,
+            @Argument int perPage) {
+        return attributeService.getAllAttributesPaginated(page, perPage);
+    }
+
+    @QueryMapping
     public Mono<AttributeDTO> attribute(@Argument Long id) {
         return attributeService.getAttributeById(id);
     }

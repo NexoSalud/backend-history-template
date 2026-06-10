@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reactive.nexo.formbuilder.dto.AttributeDTO;
+import com.reactive.nexo.formbuilder.dto.AttributePageDTO;
 import com.reactive.nexo.formbuilder.entity.Attribute;
 import com.reactive.nexo.formbuilder.repository.AttributeRepository;
 import io.r2dbc.postgresql.codec.Json;
@@ -67,6 +68,24 @@ public class AttributeService {
         entity.setTooltip(dto.getTooltip());
         entity.setValidationRules(toJson(dto.getValidationRules()));
         entity.setOptions(toJson(dto.getOptions()));
+    }
+
+    public Mono<AttributePageDTO> getAllAttributesPaginated(int page, int perPage) {
+        int offset = (page - 1) * perPage;
+        return attributeRepository.countAttributes()
+                .flatMap(totalCount -> {
+                    int totalPages = (int) Math.ceil((double) totalCount / perPage);
+                    return attributeRepository.findAllPaginated(perPage, offset)
+                            .map(this::toDTO)
+                            .collectList()
+                            .map(items -> AttributePageDTO.builder()
+                                    .items(items)
+                                    .totalCount(totalCount)
+                                    .page(page)
+                                    .perPage(perPage)
+                                    .totalPages(totalPages)
+                                    .build());
+                });
     }
 
     public Mono<Void> deleteAttribute(Long id) {
