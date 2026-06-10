@@ -11,6 +11,9 @@ type Query {
     """Obtener todos los atributos globales"""
     attributes: [Attribute!]!
 
+    """Obtener atributos globales con paginacion"""
+    attributesPaginated(page: Int! = 1, perPage: Int! = 25): AttributePage!
+
     """Obtener un atributo por ID"""
     attribute(id: ID!): Attribute
 
@@ -79,6 +82,14 @@ type Attribute {
     options: [AttributeOption!]
     createdAt: String
     updatedAt: String
+}
+
+type AttributePage {
+    items: [Attribute!]!
+    totalCount: Int!
+    page: Int!
+    perPage: Int!
+    totalPages: Int!
 }
 
 type TemplateGroupAttribute {
