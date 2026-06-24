@@ -34,6 +34,9 @@ public class Template {
     @Column("version")
     private Integer version;
 
+    @Column("scope")
+    private String scope;
+
     @CreatedDate
     @Column("created_at")
     private LocalDateTime createdAt;

@@ -21,6 +21,7 @@ public class TemplateDTO {
     @JsonProperty("is_active")
     private Boolean isActive;
     private Integer version;
+    private String scope;
     private List<TemplateGroupDTO> groups = new ArrayList<>();
     @JsonProperty("created_at")
     private LocalDateTime createdAt;

@@ -69,6 +69,7 @@ public class TemplateService {
                 .description(entity.getDescription())
                 .isActive(entity.getIsActive())
                 .version(entity.getVersion())
+                .scope(entity.getScope())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -80,6 +81,7 @@ public class TemplateService {
                 .description(dto.getDescription())
                 .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
                 .version(dto.getVersion() != null ? dto.getVersion() : 1)
+                .scope(dto.getScope() != null ? dto.getScope() : "CONSULTA_EXTERNA")
                 .build();
     }
 }

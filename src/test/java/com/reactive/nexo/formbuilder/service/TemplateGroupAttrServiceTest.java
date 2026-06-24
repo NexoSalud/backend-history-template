@@ -159,6 +159,121 @@ class TemplateGroupAttrServiceTest {
     }
 
     @Test
+    void addAttributeToGroup_withValidDependsOnAttr() {
+        TemplateGroupAttrDTO dto = TemplateGroupAttrDTO.builder()
+                .attributeId(6L)
+                .sortOrder(1)
+                .width("full")
+                .dependsOnAttrId(5L)
+                .dependsOnValue("SI")
+                .build();
+
+        TemplateGroupAttr savedEntity = TemplateGroupAttr.builder()
+                .id(2L)
+                .groupId(1L)
+                .attributeId(6L)
+                .sortOrder(1)
+                .width("full")
+                .dependsOnAttrId(5L)
+                .dependsOnValue("SI")
+                .build();
+
+        when(attributeService.getAttributeById(5L)).thenReturn(Mono.just(attributeDTO));
+        when(templateGroupAttrRepository.save(any(TemplateGroupAttr.class))).thenReturn(Mono.just(savedEntity));
+        when(attributeService.getAttributeById(6L)).thenReturn(Mono.just(attributeDTO));
+
+        StepVerifier.create(templateGroupAttrService.addAttributeToGroup(1L, dto))
+                .expectNextMatches(result ->
+                        result.getDependsOnAttrId() != null &&
+                        result.getDependsOnAttrId().equals(5L) &&
+                        result.getDependsOnValue().equals("SI")
+                )
+                .verifyComplete();
+    }
+
+    @Test
+    void addAttributeToGroup_withInvalidDependsOnAttr_returnsError() {
+        TemplateGroupAttrDTO dto = TemplateGroupAttrDTO.builder()
+                .attributeId(6L)
+                .sortOrder(1)
+                .width("full")
+                .dependsOnAttrId(999L)
+                .build();
+
+        when(attributeService.getAttributeById(999L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(templateGroupAttrService.addAttributeToGroup(1L, dto))
+                .expectErrorMatches(e ->
+                        e instanceof IllegalArgumentException &&
+                        e.getMessage().contains("depends_on_attr_id 999 no existe")
+                )
+                .verify();
+    }
+
+    @Test
+    void updateGroupAttribute_preservesExistingDependsOnAttr() {
+        TemplateGroupAttr existing = TemplateGroupAttr.builder()
+                .id(1L)
+                .groupId(1L)
+                .attributeId(5L)
+                .sortOrder(0)
+                .width("full")
+                .dependsOnAttrId(5L)
+                .dependsOnValue("SI")
+                .build();
+
+        TemplateGroupAttrDTO updateDto = TemplateGroupAttrDTO.builder()
+                .sortOrder(1)
+                .width("half")
+                .build();
+
+        when(templateGroupAttrRepository.findById(1L)).thenReturn(Mono.just(existing));
+        when(templateGroupAttrRepository.save(any(TemplateGroupAttr.class))).thenAnswer(invocation -> {
+            TemplateGroupAttr saved = invocation.getArgument(0);
+            saved.setId(1L);
+            return Mono.just(saved);
+        });
+        when(attributeService.getAttributeById(5L)).thenReturn(Mono.just(attributeDTO));
+
+        StepVerifier.create(templateGroupAttrService.updateGroupAttribute(1L, updateDto))
+                .expectNextMatches(dto ->
+                        dto.getWidth().equals("half") &&
+                        dto.getSortOrder() == 1 &&
+                        dto.getDependsOnAttrId() != null &&
+                        dto.getDependsOnAttrId().equals(5L) &&
+                        "SI".equals(dto.getDependsOnValue())
+                )
+                .verifyComplete();
+    }
+
+    @Test
+    void updateGroupAttribute_withInvalidDependsOnAttr_returnsError() {
+        TemplateGroupAttr existing = TemplateGroupAttr.builder()
+                .id(1L)
+                .groupId(1L)
+                .attributeId(5L)
+                .sortOrder(0)
+                .width("full")
+                .build();
+
+        TemplateGroupAttrDTO updateDto = TemplateGroupAttrDTO.builder()
+                .sortOrder(1)
+                .width("half")
+                .dependsOnAttrId(999L)
+                .build();
+
+        when(templateGroupAttrRepository.findById(1L)).thenReturn(Mono.just(existing));
+        when(attributeService.getAttributeById(999L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(templateGroupAttrService.updateGroupAttribute(1L, updateDto))
+                .expectErrorMatches(e ->
+                        e instanceof IllegalArgumentException &&
+                        e.getMessage().contains("depends_on_attr_id 999 no existe")
+                )
+                .verify();
+    }
+
+    @Test
     void removeAttributeFromGroup() {
         when(templateGroupAttrRepository.deleteByGroupIdAndAttributeId(1L, 5L)).thenReturn(Mono.empty());
 
