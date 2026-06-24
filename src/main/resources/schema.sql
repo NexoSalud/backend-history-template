@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS fb_template (
     description TEXT,
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
     version     INTEGER NOT NULL DEFAULT 1,
+    scope       VARCHAR(50) NOT NULL DEFAULT 'CONSULTA_EXTERNA',
     created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -35,9 +35,22 @@ public class TemplateGroupAttrService {
                 .defaultIfEmpty(dto);
     }
 
+    /**
+     * Valida que dependsOnAttrId, si no es null, referencie un fb_attribute existente.
+     */
+    private Mono<Long> validateDependsOnAttr(Long dependsOnAttrId) {
+        if (dependsOnAttrId == null) return Mono.just(0L);
+        return attributeService.getAttributeById(dependsOnAttrId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                        "depends_on_attr_id " + dependsOnAttrId
+                                + " no existe en fb_attribute")))
+                .map(attr -> dependsOnAttrId);
+    }
+
     public Mono<TemplateGroupAttrDTO> addAttributeToGroup(Long groupId, TemplateGroupAttrDTO dto) {
         dto.setGroupId(groupId);
-        return templateGroupAttrRepository.save(toEntity(dto))
+        return validateDependsOnAttr(dto.getDependsOnAttrId())
+                .flatMap(v -> templateGroupAttrRepository.save(toEntity(dto)))
                 .flatMap(this::populateAttribute);
     }
 
@@ -48,7 +61,27 @@ public class TemplateGroupAttrService {
                     updated.setId(existing.getId());
                     updated.setGroupId(existing.getGroupId());
                     updated.setAttributeId(existing.getAttributeId());
-                    return templateGroupAttrRepository.save(updated);
+                    // Preservar valores existentes si el DTO no los trae
+                    if (dto.getDependsOnAttrId() == null) {
+                        updated.setDependsOnAttrId(existing.getDependsOnAttrId());
+                    }
+                    if (dto.getDependsOnValue() == null) {
+                        updated.setDependsOnValue(existing.getDependsOnValue());
+                    }
+                    if (dto.getSortOrder() == null) {
+                        updated.setSortOrder(existing.getSortOrder());
+                    }
+                    if (dto.getIsRequiredOverride() == null) {
+                        updated.setIsRequiredOverride(existing.getIsRequiredOverride());
+                    }
+                    if (dto.getLabelOverride() == null) {
+                        updated.setLabelOverride(existing.getLabelOverride());
+                    }
+                    if (dto.getWidth() == null) {
+                        updated.setWidth(existing.getWidth());
+                    }
+                    return validateDependsOnAttr(updated.getDependsOnAttrId())
+                            .flatMap(v -> templateGroupAttrRepository.save(updated));
                 })
                 .flatMap(this::populateAttribute);
     }
